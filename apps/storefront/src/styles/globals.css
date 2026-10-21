@@ -1,0 +1,382 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+/* ==========================================================================
+   Maison design tokens
+   Monochrome ink-and-paper foundation with one configurable accent (oxblood).
+   Values are RGB channel triplets so Tailwind alpha modifiers work
+   (rgb(var(--color-ink) / 0.5)). This block is intentionally unlayered so it
+   overrides the @medusajs/ui-preset base variables (same specificity, ours
+   comes later / unlayered wins) — every existing ui-* utility adopts the
+   brand palette without touching hundreds of components.
+   ========================================================================== */
+
+:root {
+  /* Core palette — light */
+  --color-paper: 251 250 248;
+  --color-ink: 20 18 16;
+  --color-graphite: 74 70 65;
+  --color-subtle: 117 111 103;
+  --color-mist: 229 226 219;
+  --color-surface: 244 242 237;
+  --color-white: 255 255 255;
+  --color-error: 155 28 28;
+
+  /* The single accent. Swap this (and --color-accent-strong) to re-tint the
+     whole store: links, focus rings, primary-button hover, sale prices. */
+  --color-accent: 124 43 51;
+  --color-accent-strong: 94 32 39;
+  --color-accent-soft: 124 43 51;
+
+  /* Shadows */
+  --shadow-lift: 0 1px 2px rgb(var(--color-ink) / 0.05);
+  --shadow-panel: 0 24px 60px -24px rgb(var(--color-ink) / 0.22);
+
+  /* ---- Medusa UI variable overrides (light) ---- */
+  --fg-base: rgb(var(--color-ink));
+  --fg-muted: rgb(var(--color-graphite));
+  --fg-subtle: rgb(var(--color-subtle));
+  --fg-disabled: rgb(var(--color-subtle) / 0.55);
+  --fg-interactive: rgb(var(--color-accent));
+  --fg-interactive-hover: rgb(var(--color-accent-strong));
+  --fg-on-color: rgb(var(--color-paper));
+  --fg-on-inverted: rgb(var(--color-paper));
+  --fg-error: rgb(var(--color-error));
+
+  --bg-base: rgb(var(--color-paper));
+  --bg-subtle: rgb(var(--color-surface));
+  --bg-component: rgb(var(--color-white));
+  --bg-field: rgb(var(--color-white));
+  --bg-field-component: rgb(var(--color-white));
+  --bg-base-hover: rgb(var(--color-surface));
+  --bg-base-pressed: rgb(var(--color-mist));
+  --bg-component-hover: rgb(var(--color-surface));
+  --bg-component-pressed: rgb(var(--color-mist));
+  --bg-field-hover: rgb(var(--color-surface));
+  --bg-disabled: rgb(var(--color-surface));
+  --bg-overlay: rgb(var(--color-ink) / 0.45);
+  --bg-interactive: rgb(var(--color-accent));
+
+  --border-base: rgb(var(--color-mist));
+  --border-strong: rgb(var(--color-mist));
+  --border-interactive: rgb(var(--color-accent));
+  --border-error: rgb(var(--color-error));
+
+  --button-neutral: rgb(var(--color-white));
+  --button-neutral-hover: rgb(var(--color-surface));
+  --button-neutral-pressed: rgb(var(--color-mist));
+  --button-inverted: rgb(var(--color-ink));
+  --button-inverted-hover: rgb(var(--color-graphite));
+  --button-inverted-pressed: rgb(var(--color-ink));
+  --button-transparent: transparent;
+  --button-transparent-hover: rgb(var(--color-ink) / 0.05);
+
+  --tag-neutral-bg: rgb(var(--color-surface));
+  --tag-neutral-bg-hover: rgb(var(--color-mist));
+  --tag-neutral-text: rgb(var(--color-graphite));
+
+  --elevation-card-rest: none;
+  --elevation-card-hover: var(--shadow-lift);
+  --elevation-flyout: var(--shadow-panel);
+  --elevation-modal: var(--shadow-panel);
+  --elevation-tooltip: var(--shadow-panel);
+  --elevation-commandbar: var(--shadow-panel);
+  --elevation-code-block: var(--shadow-panel);
+
+  color-scheme: light;
+}
+
+/* Dark theme tokens. Applied by either mechanism: the `.dark` class
+   (Tailwind darkMode: "class") or html[data-mode="dark"] (the app's existing
+   data attribute). No theme toggle ships in this phase; both hooks are wired. */
+.dark,
+[data-mode="dark"] {
+  --color-paper: 19 18 17;
+  --color-ink: 242 240 234;
+  --color-graphite: 180 175 167;
+  --color-subtle: 148 143 134;
+  --color-mist: 46 44 41;
+  --color-surface: 27 26 24;
+  --color-white: 31 30 28;
+  --color-error: 224 108 108;
+
+  --color-accent: 201 122 114;
+  --color-accent-strong: 224 147 139;
+  --color-accent-soft: 201 122 114;
+
+  --shadow-lift: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-panel: 0 24px 60px -24px rgb(0 0 0 / 0.6);
+
+  --fg-base: rgb(var(--color-ink));
+  --fg-muted: rgb(var(--color-graphite));
+  --fg-subtle: rgb(var(--color-subtle));
+  --fg-disabled: rgb(var(--color-subtle) / 0.55);
+  --fg-interactive: rgb(var(--color-accent));
+  --fg-interactive-hover: rgb(var(--color-accent-strong));
+  --fg-on-color: rgb(var(--color-paper));
+  --fg-on-inverted: rgb(var(--color-paper));
+  --fg-error: rgb(var(--color-error));
+
+  --bg-base: rgb(var(--color-paper));
+  --bg-subtle: rgb(var(--color-surface));
+  --bg-component: rgb(var(--color-white));
+  --bg-field: rgb(var(--color-white));
+  --bg-field-component: rgb(var(--color-white));
+  --bg-base-hover: rgb(var(--color-surface));
+  --bg-base-pressed: rgb(var(--color-mist));
+  --bg-component-hover: rgb(var(--color-surface));
+  --bg-component-pressed: rgb(var(--color-mist));
+  --bg-field-hover: rgb(var(--color-surface));
+  --bg-disabled: rgb(var(--color-surface));
+  --bg-overlay: rgb(0 0 0 / 0.6);
+  --bg-interactive: rgb(var(--color-accent));
+
+  --border-base: rgb(var(--color-mist));
+  --border-strong: rgb(var(--color-mist));
+  --border-interactive: rgb(var(--color-accent));
+
+  --button-neutral: rgb(var(--color-white));
+  --button-neutral-hover: rgb(var(--color-surface));
+  --button-neutral-pressed: rgb(var(--color-mist));
+  --button-inverted: rgb(var(--color-ink));
+  --button-inverted-hover: rgb(var(--color-graphite));
+  --button-inverted-pressed: rgb(var(--color-ink));
+  --button-transparent: transparent;
+  --button-transparent-hover: rgb(var(--color-ink) / 0.08);
+
+  --tag-neutral-bg: rgb(var(--color-surface));
+  --tag-neutral-bg-hover: rgb(var(--color-mist));
+  --tag-neutral-text: rgb(var(--color-graphite));
+
+  --elevation-card-rest: none;
+  --elevation-card-hover: var(--shadow-lift);
+
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-paper text-ink antialiased;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+      "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  /* Visible keyboard focus everywhere; components may replace this with a
+     ring via focus-visible utilities (utilities beat base layer). */
+  :focus-visible {
+    outline: 2px solid rgb(var(--color-accent));
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background-color: rgb(var(--color-accent));
+    color: rgb(var(--color-paper));
+  }
+
+  ::placeholder {
+    color: rgb(var(--color-subtle));
+    opacity: 1;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: rgb(var(--color-accent));
+  }
+
+  /* Respect the OS reduced-motion setting across every animation and
+     transition, including the ones inherited from the Medusa preset. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  input:focus ~ label,
+  input:not(:placeholder-shown) ~ label {
+    @apply -translate-y-2 text-xsmall-regular;
+  }
+
+  input:focus ~ label {
+    @apply left-0;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    border: 1px solid rgb(var(--color-ink));
+    -webkit-text-fill-color: rgb(var(--color-ink));
+    -webkit-box-shadow: 0 0 0px 1000px rgb(var(--color-white)) inset;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  input[type="search"]::-webkit-search-decoration,
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-results-button,
+  input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+  }
+
+  /* Layout primitive: page gutter. Responsive padding keeps a consistent
+     alignment grid on mobile through wide desktop. */
+  .content-container {
+    @apply w-full mx-auto max-w-[90rem] px-5 xsmall:px-8 small:px-10 medium:px-12;
+  }
+
+  /* Editorial text link: underline revealed on hover, motion-safe. */
+  .link-underline {
+    @apply transition-colors duration-fast ease-lux-out;
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+    text-decoration-color: transparent;
+  }
+
+  .link-underline:hover,
+  .group:hover .link-underline,
+  .link-underline:focus-visible {
+    text-decoration-color: currentColor;
+  }
+
+  /* One orchestrated page-load moment for the home hero. Single sequence,
+     not scattered scroll reveals. Disabled under reduced motion by the
+     global base rule above. */
+  .hero-reveal {
+    animation: hero-reveal 640ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 80ms;
+  }
+
+  .hero-reveal-late {
+    animation: hero-reveal 640ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 220ms;
+  }
+
+  @keyframes hero-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* The Medusa preset hardcodes the (never-loaded) "Inter" family name into
+     its .txt-* classes. Re-point them at the loaded next/font variables so
+     every existing text class uses the real body face. */
+  .txt-compact-xsmall,
+  .txt-compact-xsmall-plus,
+  .txt-compact-small,
+  .txt-compact-small-plus,
+  .txt-compact-medium,
+  .txt-compact-medium-plus,
+  .txt-compact-large,
+  .txt-compact-large-plus,
+  .txt-compact-xlarge,
+  .txt-compact-xlarge-plus,
+  .txt-xsmall,
+  .txt-xsmall-plus,
+  .txt-small,
+  .txt-small-plus,
+  .txt-medium,
+  .txt-medium-plus,
+  .txt-large,
+  .txt-large-plus,
+  .txt-xlarge,
+  .txt-xlarge-plus,
+  .h1-webs,
+  .h2-webs,
+  .h3-webs,
+  .h4-webs {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+      "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  /* Legacy starter type scale — kept so existing markup keeps compiling,
+     refined toward the new line-height rhythm. */
+  .text-xsmall-regular {
+    @apply text-[11px] leading-4 font-normal;
+  }
+
+  .text-small-regular {
+    @apply text-[13px] leading-5 font-normal;
+  }
+
+  .text-small-semi {
+    @apply text-[13px] leading-5 font-medium;
+  }
+
+  .text-base-regular {
+    @apply text-[14px] leading-6 font-normal;
+  }
+
+  .text-base-semi {
+    @apply text-[14px] leading-6 font-medium;
+  }
+
+  .text-large-regular {
+    @apply text-[15px] leading-6 font-normal;
+  }
+
+  .text-large-semi {
+    @apply text-[15px] leading-6 font-medium;
+  }
+
+  .text-xl-regular {
+    @apply text-[22px] leading-8 font-normal;
+  }
+
+  .text-xl-semi {
+    @apply text-[22px] leading-8 font-medium;
+  }
+
+  .text-2xl-regular {
+    @apply text-[28px] leading-10 font-normal;
+  }
+
+  .text-2xl-semi {
+    @apply text-[28px] leading-10 font-medium;
+  }
+
+  .text-3xl-regular {
+    @apply text-[30px] leading-[42px] font-normal;
+  }
+
+  .text-3xl-semi {
+    @apply text-[30px] leading-[42px] font-medium;
+  }
+}
