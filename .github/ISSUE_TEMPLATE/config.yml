@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/Anismansuri03/openshop/security/advisories/new
+    about: Please report security issues privately, never in a public issue.
+  - name: Questions & discussion
+    url: https://github.com/Anismansuri03/openshop/discussions
+    about: Ask usage questions or discuss ideas (enable GitHub Discussions if it is not on yet).

@@ -1,0 +1,78 @@
+# CI for the public Maison Commerce repository.
+#
+# Design rules:
+# - No PostgreSQL is provisioned here: DB-dependent integration suites
+#   (apps/backend test:integration:*) are intentionally NOT run — a green
+#   check must never imply database coverage that did not happen.
+# - The backend ships no unit-test files yet (see ROADMAP.md), so its
+#   test:unit script is not wired in either.
+# - Environment is explicit placeholders only. Never add real credentials:
+#   NEXT_PUBLIC_* values are inlined at build time and must stay public-safe.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # Public-safe placeholders: check-env-variables.js refuses to build the
+      # storefront without NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY. No backend is
+      # contacted during the build (storefront routes render dynamically).
+      # Backend values are dummies so `medusa build` sees a parseable config
+      # under turbo's strict env mode; nothing here is real or committed.
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: pk_ci_placeholder
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9000
+      NEXT_PUBLIC_DEFAULT_REGION: dk
+      NEXT_PUBLIC_BASE_URL: http://localhost:8000
+      MEDUSA_DISABLE_TELEMETRY: "true"
+      DATABASE_URL: postgres://postgres:placeholder@localhost:5432/medusa_ci
+      JWT_SECRET: ci_placeholder_jwt_secret
+      COOKIE_SECRET: ci_placeholder_cookie_secret
+      STORE_CORS: http://localhost:8000
+      ADMIN_CORS: http://localhost:5173
+      AUTH_CORS: http://localhost:5173
+      REDIS_URL: redis://localhost:6379
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # pnpm version comes from the packageManager field (pnpm@10.11.1)
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (backend + storefront)
+        run: pnpm run lint
+
+      - name: Typecheck backend
+        run: pnpm --filter @dtc/backend exec tsc --noEmit
+
+      - name: Typecheck storefront
+        run: pnpm --filter @dtc/storefront exec tsc --noEmit
+
+      - name: Unit tests (storefront vitest — 18 tests)
+        run: pnpm --filter @dtc/storefront test
+
+      - name: Production build (both apps)
+        run: pnpm run build
+
+      # Advisory data is printed on every run. The step is non-blocking
+      # because known transitive advisories (0 critical) are tracked in
+      # ROADMAP.md; it flips the job yellow/red the moment the state worsens
+      # beyond "known" only if you remove continue-on-error deliberately.
+      - name: Dependency audit (informational)
+        run: pnpm audit --prod
+        continue-on-error: true

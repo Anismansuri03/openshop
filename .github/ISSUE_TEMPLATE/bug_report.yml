@@ -1,0 +1,54 @@
+name: Bug report
+description: Something in the starter is broken or confusing.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. **Never paste secrets**: no `.env` contents,
+        database passwords, JWT/cookie secrets, or publishable keys — the
+        steps below ask for sanitized output only.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Clear description of the observed behavior vs. expected behavior.
+      placeholder: "Running `pnpm exec medusa db:migrate` prints X, but I expected Y."
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: Minimal steps from a clean clone. Include exact commands.
+      placeholder: |
+        1. Clone at commit <hash>, `pnpm install`
+        2. Copy env templates, set DATABASE_URL
+        3. `pnpm exec medusa db:migrate`
+        4. ...
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Node (`node -v`), pnpm (`pnpm -v`), commit hash (`git rev-parse --short HEAD`).
+      placeholder: "Windows 11 / Node v24.17.0 / pnpm 10.11.1 / commit abc1234"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized logs
+      description: Error output with secrets redacted (passwords, keys, tokens replaced with ***).
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues for duplicates.
+          required: true
+        - label: I removed all secrets from this report.
+          required: true

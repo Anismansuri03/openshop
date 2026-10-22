@@ -16,7 +16,17 @@ Thanks for your interest in contributing.
 ## Workflow
 
 1. Fork and create a feature branch.
-2. Install with `pnpm install` (pnpm 10+; `packageManager` pins 10.11.1 — Node >= 22.22.0).
+2. Copy the env templates once (`apps/backend` and `apps/storefront` each
+   need a `.env` — lint, build, and dev all read them):
+
+   ```powershell
+   Copy-Item apps\backend\.env.template apps\backend\.env
+   Copy-Item apps\storefront\.env.template apps\storefront\.env.local
+   ```
+
+   Then install with `pnpm install` (pnpm 10+; `packageManager` pins 10.11.1
+   — Node >= 22.22.0) and fill in `DATABASE_URL` + a publishable key as
+   described in `docs/local-development.md`.
 3. Make your change, then verify:
 
    ```bash

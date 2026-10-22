@@ -3,20 +3,67 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**"]
+      "outputs": ["dist/**", ".next/**"],
+      "env": [
+        "STORE_CORS",
+        "ADMIN_CORS",
+        "AUTH_CORS",
+        "REDIS_URL",
+        "JWT_SECRET",
+        "COOKIE_SECRET",
+        "DATABASE_URL",
+        "MEDUSA_DISABLE_TELEMETRY",
+        "NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY",
+        "NEXT_PUBLIC_MEDUSA_BACKEND_URL",
+        "NEXT_PUBLIC_DEFAULT_REGION",
+        "NEXT_PUBLIC_BASE_URL",
+        "NEXT_PUBLIC_STRIPE_KEY",
+        "NODE_ENV"
+      ]
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": [
+        "STORE_CORS",
+        "ADMIN_CORS",
+        "AUTH_CORS",
+        "REDIS_URL",
+        "JWT_SECRET",
+        "COOKIE_SECRET",
+        "DATABASE_URL",
+        "MEDUSA_DISABLE_TELEMETRY",
+        "NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY",
+        "NEXT_PUBLIC_MEDUSA_BACKEND_URL",
+        "NEXT_PUBLIC_DEFAULT_REGION",
+        "NEXT_PUBLIC_BASE_URL",
+        "NEXT_PUBLIC_STRIPE_KEY",
+        "MEDUSA_CLOUD_S3_HOSTNAME",
+        "MEDUSA_CLOUD_S3_PATHNAME",
+        "NODE_ENV"
+      ]
     },
     "start": {
       "dependsOn": ["^build"]
     },
     "lint": {
-      "outputs": []
+      "outputs": [],
+      "env": [
+        "NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY",
+        "NEXT_PUBLIC_MEDUSA_BACKEND_URL",
+        "NEXT_PUBLIC_DEFAULT_REGION",
+        "NEXT_PUBLIC_BASE_URL",
+        "NEXT_PUBLIC_STRIPE_KEY"
+      ]
     },
     "test": {
-      "outputs": []
+      "outputs": [],
+      "env": [
+        "NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY",
+        "NEXT_PUBLIC_MEDUSA_BACKEND_URL",
+        "NEXT_PUBLIC_DEFAULT_REGION",
+        "NEXT_PUBLIC_BASE_URL"
+      ]
     },
     "seed": {
       "outputs": []

@@ -1,0 +1,28 @@
+name: Feature request
+description: Suggest an improvement to the starter.
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do that is hard or impossible today?
+      placeholder: "It is unclear how to ..."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should change? Docs, code, scripts, templates — all are valid scopes.
+    validations:
+      required: true
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope guard
+      description: This project is a local-development starter.
+      options:
+        - label: This request does not require production-hosting features (multi-tenant SaaS, paid services, Shopify-parity scope).
+          required: true

@@ -341,15 +341,29 @@ export default async function seedDemoProducts({ container }: ExecArgs) {
     fields: ['id'],
   })
 
-  for (let start = 0; start < allProducts.length; start += INGEST_CHUNK_SIZE) {
-    const chunk = allProducts.slice(start, start + INGEST_CHUNK_SIZE)
+  try {
+    for (
+      let start = 0; start < allProducts.length; start += INGEST_CHUNK_SIZE
+    ) {
+      const chunk = allProducts.slice(start, start + INGEST_CHUNK_SIZE)
 
-    await search.ingest({
-      name: 'product.created',
-      data: chunk.map((product) => ({ id: product.id })),
-    } as never)
+      await search.ingest({
+        name: 'product.created',
+        data: chunk.map((product) => ({ id: product.id })),
+      } as never)
+    }
+
+    logger.info(`Search index caught up for ${allProducts.length} product(s).`)
+  } catch (error) {
+    // On a database where the backend has never booted, the search module has
+    // no index yet and ingestion fails. The products above are already created
+    // at this point; the index is (re)built automatically on the backend's
+    // first boot, so this must not fail the whole seed run.
+    const detail = error instanceof Error ? error.message : String(error)
+    logger.warn(
+      `Search ingestion skipped (${detail}). Products are created; the index will be built when the backend first boots.`
+    )
   }
 
-  logger.info(`Search index caught up for ${allProducts.length} product(s).`)
   logger.info('Done. Open the store page to see the new products.')
 }
