@@ -10,6 +10,34 @@ overrides:
   sharp: ^0.35.5
   proxy-addr: ^2.0.8
 
+  # Sprint 3 batch B — same-major patch/minor upgrades (all verified by build+test
+  # gates and a post-change audit; see docs/SECURITY_ADVISORIES.md).
+  "@grpc/grpc-js": ^1.14.5                 # GHSA-m9gg-hp2v-232j (high) + GHSA-f596-whhp-79r4 (low)
+  "body-parser": ^1.20.9                    # GHSA-27r3-jxmh-p828 (high)
+  "compression": ^1.8.2                     # GHSA-vc2v-76pw-4v95 (high)
+  "follow-redirects": ^1.16.1               # GHSA-q3jh-wrc6-jgq8 + GHSA-8r9p-f939-6h3c (high)
+  "lodash": ^4.18.0                         # GHSA-r5fr-rjxr-66jc (high) + GHSA-f23m-r3pf-42rh (moderate)
+  "multer": ^2.5.0                          # GHSA-q7qp-rjg7-q26m (high)
+  "source-map-js": ^1.2.2                   # GHSA-68fv-2mgg-jv7q (high)
+  "vite": ^7.3.7                            # GHSA-587h-7wmj-h5pm (high) + 3 moderate/low
+  "postcss": ^8.5.23                        # GHSA-6g55-p6wh-862q + GHSA-r28c-9q8g-f849 (high) + GHSA-fxqj-rqcc-2cmp incomplete fix (>=8.5.23)
+  "postcss-selector-parser": ^6.1.5         # GHSA-rj75-hqrm-r3gf (moderate)
+  "ajv@^8.0.0": ^8.18.0                     # GHSA-2g4f-4pwh-qvx6 (moderate) — restrict to the 8.x line
+  "brace-expansion@^1.0.0": ^1.1.21         # GHSA-6j4f-fj2g-mc7p + GHSA-qhr7-859c-m2p7 (high) + GHSA-q2hr-2g5m-vwhr (moderate)
+  "brace-expansion@^5.0.0": ^5.0.12         # same three advisories on the 5.x line
+
+  # Sprint 3 batch D — discovered that pnpm 10.x (the pinned packageManager)
+  # only reads overrides from root package.json#pnpm.overrides; this file is
+  # the pnpm 11+ location. Keep both copies in sync until the packageManager
+  # pin moves to pnpm 11 (see docs/SECURITY_ADVISORIES.md).
+  "zod": ^4.6.6                          # GHSA-mrhx-c7xc-m3w5 (high) — @medusajs/admin-sdk instance
+  "fast-uri": ^3.1.9                     # GHSA-w74x-v6f9-j3xg + GHSA-wjr9-j795-jxcr (moderate) + 2 low
+  "qs": ^6.16.1                          # GHSA-x5fp-wj9c-mxmx + GHSA-4mjr-xmp4-gh2g + GHSA-6pq8-jhm2-2vcw (moderate) — express instance
+  "uuid": ^11.1.1                        # GHSA-w5hq-g745-h8pq (moderate) — bullmq instance, CJS-load verified
+  "@graphql-tools/utils": ^12.0.2        # GHSA-7mx3-vvmw-hjmv + GHSA-c4qx-w738-7hr3 (high) — 12.1.0 export surface is a strict superset of 10.11.0 (verified), replaces the earlier gated selector
+  "@opentelemetry/instrumentation-pg": ^0.73.0  # GHSA-qqmp-wf37-98f9 (moderate) — peer api ^1.3.0 unchanged; otel family already carries duplicate minor lines
+  "glob@13.0.6": ^14.0.2                     # G10-F: GHSA-3g3m-2fjr-6pw4 (moderate) — only the exact Medusa pin is replaced; pulls minimatch ^11 (GHSA-g3hv-75wg-m249)
+
 # pnpm 11+
 allowBuilds:
   "@medusajs/telemetry": true

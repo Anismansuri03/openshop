@@ -74,10 +74,10 @@ cd apps/storefront && <pm> run lint    # next lint
 ### Test (backend only; the storefront has no test suite)
 
 ```bash
-<pm> run test                                              # all test tasks via turbo
-cd apps/backend && <pm> run test:unit                      # **/src/**/__tests__/**/*.unit.spec.ts
-cd apps/backend && <pm> run test:integration:modules       # **/src/modules/*/__tests__/**
-cd apps/backend && <pm> run test:integration:http          # **/integration-tests/http/*.spec.ts
+<pm> run test                                              # all test tasks via turbo (backend jest + storefront vitest)
+cd apps/backend && <pm> run test:unit                      # **/src/**/__tests__/**/*.unit.spec.ts (cross-platform; runs scripts/run-jest.js)
+cd apps/backend && <pm> run test:integration:modules       # **/src/modules/*/__tests__/**  (needs PostgreSQL)
+cd apps/backend && <pm> run test:integration:http          # **/integration-tests/http/*.spec.ts  (needs PostgreSQL)
 ```
 
 Single test — pass a path/pattern through to Jest, keeping `TEST_TYPE`:
@@ -92,9 +92,9 @@ cd apps/backend && <pm> run test:unit -- -t "returns the cart"
 ```bash
 cd apps/backend
 <pm> exec medusa db:generate <module-name>   # generate migrations for a custom module
-<pm> exec medusa db:migrate                  # run migrations
+<pm> exec medusa db:migrate                  # run migrations (+ the guarded initial-data seed)
 <pm> exec medusa user -e admin@test.com -p supersecret
-<pm> run backend:seed                        # from root; seeds initial data
+<pm> run backend:seed                        # from root; rerun-safe demo catalogue seed (initial data runs during db:migrate)
 ```
 
 ## Medusa Skills & MCP Server

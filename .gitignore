@@ -28,6 +28,10 @@ tests/e2e/result.txt
 # Local development (scripts/local-dev.ps1)
 .local-logs/
 
+# Database backups (apps/backend/scripts/db-backup.js) — full data incl. PII,
+# never committed (see docs/BACKUPS.md)
+backups/
+
 # E2E journey artifacts (screenshots, result files)
 tests/e2e/artifacts/
 

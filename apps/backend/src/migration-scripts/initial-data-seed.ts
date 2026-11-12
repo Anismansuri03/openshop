@@ -22,6 +22,7 @@ import {
   linkSalesChannelsToApiKeyWorkflow,
   linkSalesChannelsToStockLocationWorkflow,
 } from "@medusajs/medusa/core-flows";
+import { evaluateInitialSeedGuard } from "../lib/initial-seed-guard";
 
 export default async function initial_data_seed({
   container,
@@ -34,6 +35,39 @@ export default async function initial_data_seed({
   const fulfillmentModuleService = container.resolve(
     ModuleRegistrationName.FULFILLMENT
   );
+
+  // Re-run protection: this script is not idempotent, and the migration
+  // script bookkeeping does not cover manual or interrupted re-runs.
+  // See initial-seed-guard.ts for the decision rules.
+  const { data: existingStores } = await query.graph({
+    entity: "store",
+    fields: ["id"],
+  });
+  const { data: existingRegions } = await query.graph({
+    entity: "region",
+    fields: ["id"],
+  });
+  const { data: existingProducts } = await query.graph({
+    entity: "product",
+    fields: ["id"],
+  });
+
+  const guard = evaluateInitialSeedGuard({
+    stores: existingStores.length,
+    regions: existingRegions.length,
+    products: existingProducts.length,
+  });
+
+  if (guard.action === "skip") {
+    logger.info(
+      `Initial data seed already applied — skipping (${guard.reason}).`
+    );
+    return;
+  }
+  if (guard.action === "stop") {
+    logger.error(`Initial data seed refused to run: ${guard.reason}`);
+    throw new Error(`initial-data-seed: ${guard.reason}`);
+  }
 
   const countries = ["gb", "de", "dk", "se", "fr", "es", "it"];
 
@@ -119,6 +153,21 @@ export default async function initial_data_seed({
     })),
   });
   logger.info("Finished seeding tax regions.");
+
+  // F1 root cause made explicit (G3): the seed creates tax REGIONS but no tax
+  // RATES, so checkout silently computes tax_total = 0 until a merchant adds
+  // one. Deliberately a warning, not a default rate: this project must never
+  // assume a universal tax rate on the merchant's behalf. See docs/TAX.md.
+  const taxModuleService = container.resolve(Modules.TAX);
+  const seededRates = await taxModuleService.listTaxRates();
+  if (seededRates.length === 0) {
+    logger.warn(
+      "Tax regions were seeded without any tax rates. Checkout will compute " +
+        "0 tax (and write no tax lines) until a merchant configures rates in " +
+        "the admin Settings > Tax Regions screen. No default tax rate is " +
+        "assumed. See docs/TAX.md."
+    );
+  }
 
   logger.info("Seeding stock location data...");
   const { result: stockLocationResult } = await createStockLocationsWorkflow(

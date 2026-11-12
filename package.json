@@ -1,5 +1,7 @@
 {
   "name": "dtc-starter-monorepo",
+  "version": "0.1.0",
+  "license": "MIT",
   "private": false,
   "packageManager": "pnpm@10.11.1",
   "engines": {
@@ -7,7 +9,7 @@
   },
   "scripts": {
     "dev": "pnpm -r dev",
-    "build": "pnpm -r build",
+    "build": "turbo build",
     "start": "turbo start",
     "lint": "turbo lint",
     "test": "turbo test",
@@ -19,7 +21,29 @@
     "overrides": {
       "@types/react": "19.0.5",
       "@types/react-dom": "19.0.5",
-      "tsconfig-paths": "^4.2.0"
+      "tsconfig-paths": "^4.2.0",
+      "sharp": "^0.35.5",
+      "proxy-addr": "^2.0.8",
+      "@grpc/grpc-js": "^1.14.5",
+      "body-parser": "^1.20.9",
+      "compression": "^1.8.2",
+      "follow-redirects": "^1.16.1",
+      "lodash": "^4.18.0",
+      "multer": "^2.5.0",
+      "source-map-js": "^1.2.2",
+      "vite": "^7.3.7",
+      "postcss": "^8.5.23",
+      "postcss-selector-parser": "^6.1.5",
+      "ajv@^8.0.0": "^8.18.0",
+      "brace-expansion@^1.0.0": "^1.1.21",
+      "brace-expansion@^5.0.0": "^5.0.12",
+      "@graphql-tools/utils": "^12.0.2",
+      "zod": "^4.6.6",
+      "fast-uri": "^3.1.9",
+      "qs": "^6.16.1",
+      "uuid": "^11.1.1",
+      "@opentelemetry/instrumentation-pg": "^0.73.0",
+      "glob@13.0.6": "^14.0.2"
     }
   },
   "devDependencies": {

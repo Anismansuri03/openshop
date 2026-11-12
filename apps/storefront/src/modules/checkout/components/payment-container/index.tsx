@@ -4,7 +4,7 @@ import React, { useContext, type JSX } from "react"
 
 import Radio from "@modules/common/components/radio"
 
-import { isManual } from "@lib/constants"
+import { isTestPayment } from "@lib/constants"
 import SkeletonCardDetails from "@modules/skeletons/components/skeleton-card-details"
 import { PaymentElement } from "@stripe/react-stripe-js"
 import PaymentTest from "../payment-test"
@@ -25,8 +25,11 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
   disabled = false,
   children,
 }) => {
-  const isDevelopment = process.env.NODE_ENV === "development"
-
+  // The badge must appear whenever a test-only payment provider is offered
+  // (manual test provider or the OpenShop development payment provider) —
+  // in every environment, including production builds. Gating it on
+  // NODE_ENV previously hid the warning exactly where it matters most:
+  // a deployment that can never process a real payment.
   return (
     <RadioGroupOption
       key={paymentProviderId}
@@ -46,7 +49,7 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
           <Text className="text-base-regular">
             {paymentInfoMap[paymentProviderId]?.title || paymentProviderId}
           </Text>
-          {isManual(paymentProviderId) && isDevelopment && (
+          {isTestPayment(paymentProviderId) && (
             <PaymentTest className="hidden small:block" />
           )}
         </div>
@@ -54,7 +57,7 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
           {paymentInfoMap[paymentProviderId]?.icon}
         </span>
       </div>
-      {isManual(paymentProviderId) && isDevelopment && (
+      {isTestPayment(paymentProviderId) && (
         <PaymentTest className="small:hidden text-[10px]" />
       )}
       {children}

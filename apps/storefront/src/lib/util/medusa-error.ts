@@ -1,3 +1,5 @@
+import { redactSensitive } from "./redact"
+
 type MedusaError = {
   response?: {
     data: { message?: string } | string
@@ -13,10 +15,12 @@ export default function medusaError(error: unknown): never {
   const err = error as MedusaError
   if (err.response) {
     const u = new URL(err.config?.url ?? "", err.config?.baseURL ?? "")
+    // Headers and payloads can carry cookies, bearer tokens and API keys;
+    // they are redacted before they can reach stdout or a log aggregator.
     console.error("Resource:", u.toString())
-    console.error("Response data:", err.response.data)
+    console.error("Response data:", redactSensitive(err.response.data))
     console.error("Status code:", err.response.status)
-    console.error("Headers:", err.response.headers)
+    console.error("Headers:", redactSensitive(err.response.headers))
 
     const data = err.response.data
     const message =

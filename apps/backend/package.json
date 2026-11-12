@@ -17,9 +17,15 @@
     "start": "medusa start",
     "dev": "medusa develop",
     "lint": "medusa lint",
-    "test:integration:http": "TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
-    "test:integration:modules": "TEST_TYPE=integration:modules NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
-    "test:unit": "TEST_TYPE=unit NODE_OPTIONS=--experimental-vm-modules jest --silent --runInBand --forceExit"
+    "test": "node scripts/run-jest.js unit",
+    "test:unit": "node scripts/run-jest.js unit",
+    "test:integration:http": "node scripts/run-jest.js integration:http --silent=false",
+    "test:integration:modules": "node scripts/run-jest.js integration:modules --silent=false",
+    "test:integration:migrate": "node scripts/run-jest.js integration:migrate --silent=false",
+    "db:migrate": "node scripts/migrate-checked.js",
+    "db:backup": "node scripts/db-backup.js",
+    "db:restore": "node scripts/db-restore.js",
+    "seed": "medusa exec ./src/scripts/seed-demo-products.ts"
   },
   "dependencies": {
     "@medusajs/admin-sdk": "2.21.2",
@@ -30,14 +36,17 @@
     "@medusajs/draft-order": "2.21.2",
     "@medusajs/framework": "2.21.2",
     "@medusajs/medusa": "2.21.2",
+    "@medusajs/payment-stripe": "2.21.2",
     "@medusajs/ui": "4.2.6",
     "@tanstack/react-query": "5.64.2",
     "react-i18next": "13.5.0",
     "react-router-dom": "7.18.2",
-    "zod": "4.2.0"
+    "zod": "4.6.7"
   },
   "devDependencies": {
+    "@medusajs/core-flows": "2.21.2",
     "@medusajs/test-utils": "2.21.2",
+    "@medusajs/utils": "2.21.2",
     "@swc/core": "^1.7.28",
     "@swc/jest": "^0.2.36",
     "@types/jest": "^29.5.13",

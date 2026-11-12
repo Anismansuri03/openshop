@@ -4,6 +4,17 @@ name: Update Medusa
 on:
   workflow_dispatch: # Allow manual runs
 
+# Least privilege by default; the job below escalates explicitly for the
+# PR it opens.
+permissions:
+  contents: read
+
+# Only one update-PR run at a time; never cancel one mid-flight (an
+# interrupted run could leave a half-updated branch).
+concurrency:
+  group: update-medusa
+  cancel-in-progress: false
+
 jobs:
   update:
     # Required for opening PRs
@@ -11,15 +22,22 @@ jobs:
       contents: write
       pull-requests: write
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${{ secrets.MEDUSA_PUBLISHABLE_KEY }}
       NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${{ secrets.MEDUSA_BACKEND_URL }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Update Medusa
-        uses: medusajs/medusa-update-action@v1
+        # Pinned to the commit that tag v1 pointed at when pinned
+        # (2026-11-07): api.github.com/repos/medusajs/medusa-update-action/
+        # git/ref/tags/v1 -> 02eca016e5b0024bf4ff3beaeff4530bc18fa6e3.
+        # Re-pin deliberately when upgrading the action; never float on a
+        # branch or unpinned tag for a workflow that pushes commits and
+        # holds ANTHROPIC_API_KEY (docs/RELEASING.md §6.7).
+        uses: medusajs/medusa-update-action@02eca016e5b0024bf4ff3beaeff4530bc18fa6e3 # v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}

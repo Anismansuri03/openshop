@@ -31,8 +31,10 @@ weeks; fixes for confirmed issues land on `main` with credit if you want it.
   guessable on an unconfigured local install" is expected behavior, not a
   vulnerability — but a way to leak *filled-in* `.env` values, committed
   credentials, or secrets in git history would be.
-- Checkout uses Medusa's built-in **manual test payment provider** only;
-  there is no payment processing surface to attack in this repository.
+- Checkout uses Medusa's built-in **manual test payment provider** and a
+  clearly labelled **development payment provider** that only simulates
+  payments; both refuse real money, and there is no payment processing
+  surface to attack in this repository. See `docs/PAYMENTS.md`.
 - Dependency advisories: run `pnpm audit --prod`. Known transitive findings
   are tracked in ROADMAP.md; production-chain issues already have overrides
   in `pnpm-workspace.yaml`.

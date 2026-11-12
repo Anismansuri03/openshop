@@ -33,6 +33,17 @@ export const paymentInfoMap: Record<
     title: "Manual Payment",
     icon: <CreditCard />,
   },
+  "pp_dev-payment_default": {
+    title: "Development Payment (test only)",
+    icon: <CreditCard />,
+  },
+  // OpenShop payment simulator (G2): deterministic, credential-free,
+  // cannot move money. Always visibly marked test-only (never presented
+  // as a real provider). See docs/PAYMENTS.md.
+  "pp_sim-payment_default": {
+    title: "Simulated Payment (test only)",
+    icon: <CreditCard />,
+  },
   // Add more payment providers here
 }
 
@@ -48,6 +59,25 @@ export const isPaypal = (providerId?: string) => {
 }
 export const isManual = (providerId?: string) => {
   return providerId?.startsWith("pp_system_default")
+}
+
+// OpenShop development payment provider (G5): simulates payments only,
+// never processes real money. See docs/PAYMENTS.md.
+export const isDevPayment = (providerId?: string) => {
+  return providerId?.startsWith("pp_dev-payment_")
+}
+
+// OpenShop payment simulator (G2): same guarantee as the development
+// provider — simulated only, no credentials, no real money.
+export const isSimPayment = (providerId?: string) => {
+  return providerId?.startsWith("pp_sim-payment_")
+}
+
+// Any provider that must be visibly marked as test-only in checkout
+// (the manual test provider, the development payment provider, or the
+// payment simulator).
+export const isTestPayment = (providerId?: string) => {
+  return isManual(providerId) || isDevPayment(providerId) || isSimPayment(providerId)
 }
 
 // Add currencies that don't need to be divided by 100

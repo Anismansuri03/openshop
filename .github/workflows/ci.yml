@@ -1,24 +1,50 @@
 # CI for the public Maison Commerce repository.
 #
 # Design rules:
-# - No PostgreSQL is provisioned here: DB-dependent integration suites
-#   (apps/backend test:integration:*) are intentionally NOT run — a green
-#   check must never imply database coverage that did not happen.
-# - The backend ships no unit-test files yet (see ROADMAP.md), so its
-#   test:unit script is not wired in either.
+# - The `checks` job is DB-free: lint, typechecks, unit tests, and builds.
+#   A green check there never implies database coverage.
+# - The `integration` job provisions its OWN PostgreSQL service container.
+#   The DB-backed suites (apps/backend test:integration:http and
+#   test:integration:migrate) run only against that throwaway service:
+#   connections are derived from the DB_* variables set below, suite
+#   databases are created explicitly in the service, and the suites drop
+#   them again. No developer or production database can be reached from CI.
 # - Environment is explicit placeholders only. Never add real credentials:
 #   NEXT_PUBLIC_* values are inlined at build time and must stay public-safe.
+#   Backend values are dummies so `medusa build` sees a parseable config
+#   under turbo's strict env mode; nothing here is real or committed.
 name: CI
 
 on:
   push:
     branches: [main]
+    # Release tags run the full battery so a tagged release is verifiable;
+    # the audit step below turns BLOCKING on tag refs (docs/RELEASING.md §6).
+    tags: ["v*"]
   pull_request:
+
+# Least privilege by default; jobs that need more declare it themselves
+# (this workflow needs none beyond checkout).
+permissions:
+  contents: read
+
+# One run per ref: superseded runs on the same branch/PR are cancelled,
+# but a main-line or release-tag run is never killed mid-flight.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/') }}
 
 jobs:
   checks:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        # 22.22.0 = the floor declared in package.json "engines"; 24 = the
+        # Node line every local verification record ran on (Node v24.17.0,
+        # roadmap §9/§11). docs/RELEASING.md §4 records both as supported.
+        node-version: ["22.22.0", "24"]
     env:
       # Public-safe placeholders: check-env-variables.js refuses to build the
       # storefront without NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY. No backend is
@@ -28,7 +54,12 @@ jobs:
       NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: pk_ci_placeholder
       NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9000
       NEXT_PUBLIC_DEFAULT_REGION: dk
-      NEXT_PUBLIC_BASE_URL: http://localhost:8000
+      # Public-origin placeholder: the storefront's production build validates
+      # NEXT_PUBLIC_BASE_URL and REJECTS loopback origins (G11), so CI cannot
+      # use http://localhost:8000 here. `.example` is a reserved,
+      # non-routable domain (RFC 2606) — this value is public-safe, lets the
+      # build verify compilation, and is never served to anyone.
+      NEXT_PUBLIC_BASE_URL: https://ci-build.example
       MEDUSA_DISABLE_TELEMETRY: "true"
       DATABASE_URL: postgres://postgres:placeholder@localhost:5432/medusa_ci
       JWT_SECRET: ci_placeholder_jwt_secret
@@ -48,7 +79,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ matrix.node-version }}
           cache: pnpm
 
       - name: Install (frozen lockfile)
@@ -63,8 +94,14 @@ jobs:
       - name: Typecheck storefront
         run: pnpm --filter @dtc/storefront exec tsc --noEmit
 
-      - name: Unit tests (storefront vitest — 18 tests)
+      - name: Unit tests (storefront vitest)
         run: pnpm --filter @dtc/storefront test
+
+      # Backend unit tests (jest) run through scripts/run-jest.js, which sets
+      # TEST_TYPE/NODE_OPTIONS cross-platform. These are pure unit tests and
+      # need no PostgreSQL service.
+      - name: Unit tests (backend jest)
+        run: pnpm --filter @dtc/backend test
 
       - name: Production build (both apps)
         run: pnpm run build
@@ -74,5 +111,118 @@ jobs:
       # ROADMAP.md; it flips the job yellow/red the moment the state worsens
       # beyond "known" only if you remove continue-on-error deliberately.
       - name: Dependency audit (informational)
+        # Informational on branch/PR runs (the known low advisory must not
+        # redden every push — see docs/SECURITY_ADVISORIES.md), but BLOCKING
+        # on release-tag refs: a tagged release cannot ship with a
+        # regressed audit (docs/RELEASING.md §6.5).
         run: pnpm audit --prod
-        continue-on-error: true
+        continue-on-error: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+  # DB-backed integration suites. This job provisions a dedicated PostgreSQL
+  # service container — the only database these suites may ever touch. The
+  # suites read their connection from DB_HOST/DB_PORT/DB_USERNAME/DB_PASSWORD
+  # (never from a checked-in URL), create their own disposable databases from
+  # those credentials, and drop them when finished. CI has no access to any
+  # developer database, so a mis-wired suite fails loudly instead of silently
+  # exercising someone else's data.
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        # PG17 = the version every local verification record ran on
+        # (roadmap §9/§11); the previous 16-alpine was an untested skew
+        # (docs/RELEASING.md §4).
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: ci_placeholder_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      # Explicit placeholders only — never real credentials. DATABASE_URL
+      # exists because startup validation requires a parseable postgres URL;
+      # it points at the service container itself (the default `postgres`
+      # database), so even an accidentally-leased connection stays inside CI.
+      # The suites override it per step for the pre-migration of each suite
+      # database, and the test runner ignores it for connections (DB_* wins).
+      DATABASE_URL: postgres://postgres:ci_placeholder_password@localhost:5432/postgres
+      DB_HOST: localhost
+      DB_PORT: "5432"
+      DB_USERNAME: postgres
+      DB_PASSWORD: ci_placeholder_password
+      JWT_SECRET: ci_placeholder_jwt_secret_value
+      COOKIE_SECRET: ci_placeholder_cookie_secret_value
+      STORE_CORS: http://localhost:8000
+      ADMIN_CORS: http://localhost:5173
+      AUTH_CORS: http://localhost:5173
+      MEDUSA_DISABLE_TELEMETRY: "true"
+      # node-postgres resolves "localhost" to ::1 first on Node 17+; the
+      # suites require IPv4 (the same setting the local harness uses).
+      # scripts/run-jest.js appends --experimental-vm-modules to this value.
+      NODE_OPTIONS: --dns-result-order=ipv4first
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # pnpm version comes from the packageManager field (pnpm@10.11.1)
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      # The test runner creates a missing suite database itself, but
+      # pre-migration (which runs the guarded initial-data seed providing the
+      # fixtures the suites assert against — regions, tax rates, demo
+      # catalogue) needs the database to exist first: `medusa db:migrate`
+      # does not create it, and the runner only migrates schema, links and
+      # search indexes — never migration scripts. Every suite database is
+      # therefore created AND seeded here; a suite whose fixtures are missing
+      # fails in the run below instead of passing vacuously or failing for a
+      # reason CI never surfaces. psql ships inside the postgres service image.
+      - name: Create and pre-migrate all six suite databases (seeds fixtures)
+        working-directory: apps/backend
+        run: |
+          for db in \
+            openshop_sprint3_order_lifecycle \
+            openshop_sprint3_tax_regression \
+            openshop_sprint3_rate_limit \
+            openshop_g3_tax_config \
+            openshop_g5_dev_payment \
+            openshop_g2_payment
+          do
+            docker exec "${{ job.services.postgres.id }}" psql -U postgres -c "CREATE DATABASE $db"
+            # `pnpm run db:migrate` is the checked wrapper
+            # (scripts/migrate-checked.js) that propagates the seed script's
+            # exit code — a fixture-seed failure fails CI here instead of
+            # yielding a silently unfixed database.
+            DATABASE_URL="postgres://postgres:ci_placeholder_password@localhost:5432/$db" pnpm run db:migrate
+          done
+
+      # All six http spec files share one jest pass (TEST_TYPE=integration:http).
+      # Each derives its connection from DB_* only and drops its own database
+      # when it finishes. test:integration:modules is deliberately not run:
+      # its pattern matches the G5 dev-payment and G2 module specs, all of
+      # which are *.unit.spec.ts files the unit job already runs, so a second
+      # pass would duplicate those tests rather than cover anything new.
+      - name: HTTP integration suites (all six suites)
+        working-directory: apps/backend
+        run: pnpm run test:integration:http
+
+      # Migration exit-code regression suite: creates and drops its own
+      # disposable database from DB_* and proves `db:migrate` propagates a
+      # failing seed's exit code (Sprint 3, Task 3).
+      - name: Migration exit-code regression suite
+        working-directory: apps/backend
+        run: pnpm run test:integration:migrate

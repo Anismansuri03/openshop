@@ -20,7 +20,10 @@
 > production-hardened platform, it makes no compatibility or feature claims
 > relative to Shopify, and it is not affiliated with Shopify. Checkout uses
 > Medusa's built-in **manual test payment provider** (`pp_system_default`)
-> only — there is no real payment processing in this repository.
+> and a clearly labelled **development payment provider**
+> (`pp_dev-payment_default`) that only ever simulates payments — there is no
+> real payment processing in this repository, and a simulated payment is not
+> a payment integration (see [docs/PAYMENTS.md](docs/PAYMENTS.md)).
 
 ## Why Maison Commerce?
 
@@ -47,13 +50,13 @@ MIT-licensed codebase.
 | Area | State |
 | --- | --- |
 | Catalog (products, collections, categories, tags, options/variants) | Working — 54 published products, 440 variants |
-| Cart & multi-step checkout (address → delivery → payment → review) | Working — test payment provider only |
+| Cart & multi-step checkout (address → delivery → payment → review) | Working — simulated/test payment providers only (manual test + labelled development provider) |
 | Inventory (stock levels per variant, "out of stock" handling) | Working — 440 seeded levels |
 | Regions, shipping options, publishable API keys | Working — 1 region (7 countries), 2 shipping options |
 | Customer accounts (register, login, order history, address book) | Implemented in the storefront; guest checkout is the E2E-verified path |
 | Admin dashboard (`/app`) | Working — catalog, orders, settings |
 | Local search facets on the store page | Working — index seeded on backend boot |
-| Real payment providers (Stripe etc.) | **Not wired** — provider stubs only |
+| Real payment providers (Stripe etc.) | **Not wired** — simulated development provider + manual test provider only |
 | Production deployment guides / hardening | **Not provided** — see ROADMAP.md |
 
 ## Architecture
@@ -105,13 +108,16 @@ Copy-Item apps\storefront\.env.template apps\storefront\.env.local
 #      DATABASE_URL=postgres://USER:YOUR_PASSWORD@localhost:5432/maison_public_local
 #      JWT_SECRET=<long random string>
 #      COOKIE_SECRET=<another long random string>
+#    Backend startup validates these (plus the *_CORS entries) and names any
+#    missing or invalid variable without ever printing its value.
 
 # 3. apps\backend — migrate + seed
 cd apps\backend
 pnpm exec medusa db:migrate
 #    ^ schema migrations + built-in initial data (region, channel, shipping,
-#      publishable key, 4 starter products). Do NOT run initial-data-seed.ts
-#      again by hand — it is not idempotent.
+#      publishable key, 4 starter products). Re-running initial-data-seed.ts
+#      by hand is now guarded too (it skips when data is complete, and aborts
+#      with counts when partial) — but db:migrate is still the normal path.
 pnpm exec medusa exec ./src/scripts/seed-demo-products.ts
 pnpm exec medusa exec ./src/scripts/seed-demo-inventory-levels.ts
 pnpm exec medusa user -e admin@example.com -p 'YOUR-STRONG-PASSWORD'
@@ -145,8 +151,9 @@ pnpm run storefront:dev
 - Storefront at http://localhost:8000/dk — store page lists 54 products,
   all in stock
 - Admin at http://localhost:9000/app — same catalog, orders, settings
-- A complete checkout in the storefront using the **Test payment** method
-  (no real money, no external payment calls)
+- A complete checkout in the storefront using a **simulated/test payment**
+  method (Development Payment or Test — no real money, no external payment
+  calls; see [docs/PAYMENTS.md](docs/PAYMENTS.md))
 
 ## Screenshots
 
@@ -165,7 +172,8 @@ confirmation — see `docs/screenshots/`):
 
 ```powershell
 pnpm run lint                              # eslint (both workspaces)
-pnpm --filter @dtc/storefront test         # vitest — 18 unit tests
+pnpm run test                              # vitest (storefront, 43 tests) +
+                                           # jest (backend unit tests) — no services needed
 pnpm --filter @dtc/storefront exec tsc --noEmit
 pnpm --filter @dtc/backend exec tsc --noEmit
 pnpm run build                             # production builds
@@ -179,7 +187,9 @@ the storefront is connected to. Payments are never captured or fulfilled.
 
 - Not production-ready: no deployment/hardening guide, default dev secrets in
   templates, no observability stack.
-- Not a Shopify replacement claim: no real payment provider wired, no
+- Not a Shopify replacement claim: no real payment provider wired (only
+  clearly labelled simulated/test providers — a simulated payment is not a
+  payment integration), no
   multi-tenant SaaS, no app store, no official Shopify affiliation.
 - Not free of responsibility: self-hosting means you operate PostgreSQL,
   backups, TLS, and PCI scope yourself if you ever add real payments.
@@ -188,10 +198,6 @@ the storefront is connected to. Payments are never captured or fulfilled.
 
 These are pre-existing, documented, and intentionally not hidden:
 
-- `pnpm --filter @dtc/backend run test:unit` exits 1 on Windows (POSIX
-  `VAR=value` script syntax); the backend also currently ships **no unit
-  test files**, so the script matches nothing on any OS. Tracked in
-  [ROADMAP.md](ROADMAP.md).
 - `next lint` is deprecated (removal in Next.js 16); the storefront reports
   two `react-hooks/exhaustive-deps` warnings.
 - `GET /store/locales` 404s (the storefront calls it; harmless).
@@ -200,10 +206,25 @@ These are pre-existing, documented, and intentionally not hidden:
 - `pnpm.overrides` in the root `package.json` is ignored by pnpm 10 — the
   active dependency overrides live in `pnpm-workspace.yaml` (`sharp`,
   `proxy-addr`, chosen to address published GHSA advisories).
-- `pnpm audit --prod` reports transitive advisories (0 critical). Overrides
-  in `pnpm-workspace.yaml` already address the most severe production-chain
-  findings; the rest sit in dev/build tooling (vite, postcss, grpc-js, ...).
+- `pnpm audit --prod` reported 36 advisories on 2026-10-27 (0 critical,
+  20 high, 14 moderate, 2 low), all reached through `@medusajs/*`
+  dependency chains — several highs are production runtime libraries
+  (body-parser, multer, follow-redirects, lodash, ...), not just build
+  tooling. Overrides in `pnpm-workspace.yaml` (`sharp`, `proxy-addr`)
+  address earlier findings; triage of the rest is tracked in
+  [ROADMAP.md](ROADMAP.md) (P0-6). The CI audit step is informational and
+  prints the current count on every run.
 - No Redis required for local development (an in-memory fallback is used).
+- **No tax rates are seeded** — 7 tax regions exist but `tax_rate` is empty, so
+  checkout computes `tax_total = 0` and writes no tax lines. Shipping charges
+  do apply. This is deliberate (no universal rate is assumed); configure rates
+  per country in the admin (**Settings -> Tax regions**) following
+  [docs/TAX.md](docs/TAX.md), which also covers tax-inclusive pricing,
+  province overrides, and the current limitations (no tax service, no
+  VAT-number/B2B flows, no filings).
+- **`medusa db:migrate` can exit 0 even when the built-in seed script fails**
+  (upstream CLI does not propagate that child exit code) — check the command's
+  output, not just its exit code, until P1-10 lands.
 - `next build` skips TypeScript and ESLint errors
   (`ignoreBuildErrors`/`ignoreDuringBuilds`, upstream default); CI runs
   `tsc --noEmit` and lint as separate, blocking steps instead.
@@ -212,6 +233,15 @@ These are pre-existing, documented, and intentionally not hidden:
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Planned work is tracked in
 [ROADMAP.md](ROADMAP.md). Security reports: [SECURITY.md](SECURITY.md).
+Notable changes: [CHANGELOG.md](CHANGELOG.md). Versioning and the
+release/support policy (including the pre-release checklist) live in
+[docs/RELEASING.md](docs/RELEASING.md) — no versioned release has been
+tagged yet. Evaluating OpenShop for a real deployment? Start with
+[docs/ADOPTION.md](docs/ADOPTION.md) — a verified setup path plus the
+blocking checklist to work through first. The deployment runbook itself is
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) (architecture, env reference,
+backup/restore, health checks, and a full clean-install test record with
+exit codes) and [docs/UPGRADING.md](docs/UPGRADING.md) (upgrade/rollback).
 
 ## Attribution and license
 
