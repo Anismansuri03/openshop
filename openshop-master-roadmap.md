@@ -83,7 +83,7 @@ Severity = launch impact. "Size" = expected effort for a verified fix.
 | **G6** | **Med** | **Rate limiter is per-instance in-memory** (Sprint-3 documented limitation) | [SRC] `auth-rate-limit.ts` | Redis-backed store when `REDIS_URL` present, in-memory fallback; document | Integration test against real Redis: N instances share one budget (or documented as single-node-only) | M |
 | **G7** | **Med** | **No outbound webhooks with signature verification** (P1-5) | [SRC] none configured | Generic signed webhook emitter (HMAC, timestamp, retry/backoff) + delivery tests | Recorded test delivery with valid/invalid-signature/replay tests | M |
 | **G8** | **Med** | **No backups/upgrade guide/changelog/versioning policy** (M8 tail) — release engineering | [SRC] none | docs/UPGRADING.md + CHANGELOG.md seed + versioning/support policy + release checklist (mission §12) | Doc review + clean-checkout follow-through test | S–M — **docs half done 2026-11-05: docs/UPGRADING.md + docs/DEPLOYMENT.md from a tested clean install (stage milestone G7, §9); CHANGELOG seed + versioning/support policy + release checklist + root version/license done 2026-11-07 (G10-C, §12). Acceptance partially covered by G10-B's isolated-copy follow-through (§11, robocopy — not a git clone of a tag); a true clean checkout of a tagged release stays in the release checklist (RELEASING §6.5), pending authorization** |
-| **G9** | **Med** | **GitHub Actions never remotely verified** — local YAML validation ≠ passing workflow. HEAD `ci.yml` has **no integration job at all**; the integration job + five-DB fix live only in the uncommitted working copy | [RUN] local parse + full CI-state replication (G10-A, §10): incomplete-seed state **15/34 exit 1** → corrected config **34/34 exit 0** | When push authorized: push branch, inspect real run logs, fix failures | Actual Actions run URL with green `integration` job | S (needs authorization) |
+| **G9** | **Med** | ~~GitHub Actions never remotely verified~~ — **VERIFIED 2026-11-12: run [`43197912861`](https://github.com/Anismansuri03/openshop/actions/runs/43197912861) green (all 3 jobs, push to `main` @ `9642f05`)**; committed `ci.yml` now includes the integration job + all-six-DB fix | [RUN] local parse + full CI-state replication (G10-A, §10): incomplete-seed state **15/34 exit 1** → corrected config **34/34 exit 0**; remote run **success 2026-11-12 (§17)** | ~~When push authorized: push branch, inspect real run logs, fix failures~~ **Done** | Actual Actions run URL with green `integration` job — **met: run 43197912861** | **Done 2026-11-12 (§17)** |
 | **G10** | **Med** | **Performance / accessibility / responsive behavior unmeasured** (mission §9) [NOT RUN] | [NOT RUN] PRODUCT_AUDIT §6 | Lighthouse/axe runs at 3 mobile/desktop widths on isolated instance; fix significant findings | Recorded scores/traces + fixed keyboard/contrast issues | M |
 | **G11** | **Med-Low** | **SEO**: no sitemap/robots; dead `next-sitemap` config; `metadataBase` localhost fallback (M11) | [SRC] | working `app/sitemap.ts` + robots route or config; remove dead code | Lint/type/build green; generated sitemap lists seeded products on test instance | S |
 | **G12** | **Med-Low** | **i18n**: no translated strings; country routing exists but UI strings are English-only (mission §9/13) | [SRC] PRODUCT_AUDIT §6 | Survey stack need first; lightweight string catalogs only if justified — avoid premature framework (mission §9) | Documented decision + at least one locale path proof if implemented | M (or documented-defer) |
@@ -110,12 +110,12 @@ Evaluated in `openshop-global-launch-readiness-report.md`; summary:
 | 3 | Real payments safely | **FAIL** — the official Stripe provider is now wired end-to-end (G2, §16) but **never validated**: no credentials exist, no sandbox run happened (G2-G BLOCKED/NOT TESTED); checkout still runs on simulated/test providers only (G5 development provider + G2 simulator + `pp_system_default`), and a simulated payment is not a payment integration |
 | 4 | Products/inventory/orders/tax/shipping correct | PARTIAL (lifecycle + tax merchant-path tested via G3; refunds/fulfill not tested) |
 | 5 | AuthN/AuthZ protect sensitive operations | PASS for authentication + deny-by-default route auth [RUN]; RBAC absent (G4) |
-| 6 | Backups and restoration tested | **PASS (local)** [RUN Stage B] |
+| 6 | Backups and restoration tested | **PASS (local)** [RUN Stage B] — drill also green remotely at G9 (run 43197912861, migration-suite step success, §17) |
 | 7 | Upgrades/deployment documented and reproducible | **PASS (local)** [RUN — stage milestone G7, gap G8] — `docs/DEPLOYMENT.md` + `docs/UPGRADING.md` written from a **tested** clean installation (isolated copy, fresh database, every step's exit code recorded, roadmap §9). Upgrade mechanisms tested (idempotent `db:migrate`, backup → restore rollback, service resume). Explicitly [NOT TESTED]: reverse proxy/TLS/process manager, N→N+1 upgrade (single version → G10). **Reproducibility re-proven at G10-B (2026-11-07, §11): full build + 218/218 tests reproduced from an isolated clean copy; Turbo cache restore of build artifacts proven file-for-file against cache manifests** |
 | 8 | Storefront/admin accessible and responsive | UNVERIFIED (G10) |
-| 9 | Automated tests catch regressions | **PASS (313 tests after G2, 2026-11-12: unit 258 [backend 171 incl. +81 G2 + storefront 87] + HTTP 47 incl. +13 G2 + migration/backup 8 — was 219 at G10-F; CI wired — five-suite migration gap found and fixed in the working copy at G10-A §10, locally replicated; **remote run unverified, fix uncommitted** — G9)** |
-| 10 | Public releases verifiable and supportable | **PARTIAL** — release engineering exists on paper since G10-C §12 (root `version`/`license`, CHANGELOG seed, docs/RELEASING.md versioning + support policy + blocking release checklist), and G10-E (2026-11-08) **dry-ran that checklist end-to-end** (§14.2: every step PASS/BLOCKED/NOT TESTED with evidence — first blocker is gate 3 itself), but **zero tags/releases have ever been cut**, remote CI remains unverified (G9), and the dry-run surfaced an audit blocker (3 records, §14.3 — **remediated at G10-F, back to the acknowledged 1 low record, §15.2**); PASS requires one release executed through RELEASING §6, which additionally blocks on gate 3 |
-| 11 | License and costs transparent | PARTIAL (MIT file ✓, `license: "MIT"` added to root package.json at G10-C §12 but **uncommitted** — committed HEAD still lacks it; costs documented in README/ADOPTION) |
+| 9 | Automated tests catch regressions | **PASS (313 tests after G2, 2026-11-12: unit 258 [backend 171 incl. +81 G2 + storefront 87] + HTTP 47 incl. +13 G2 + migration/backup 8 — was 219 at G10-F; CI wired — five-suite migration gap found and fixed at G10-A §10, **committed, pushed and remotely verified green 2026-11-12: run 43197912861, checks ×2 + integration all success, §17 — G9 closed**)** |
+| 10 | Public releases verifiable and supportable | **PARTIAL** — release engineering exists on paper since G10-C §12 (root `version`/`license`, CHANGELOG seed, docs/RELEASING.md versioning + support policy + blocking release checklist), and G10-E (2026-11-08) **dry-ran that checklist end-to-end** (§14.2: every step PASS/BLOCKED/NOT TESTED with evidence — first blocker is gate 3 itself), but **zero tags/releases have ever been cut**, remote CI now **verified green (G9, 2026-11-12 — run 43197912861, §17)**, and the dry-run surfaced an audit blocker (3 records, §14.3 — **remediated at G10-F, back to the acknowledged 1 low record, §15.2**); PASS requires one release executed through RELEASING §6, which additionally blocks on gate 3 |
+| 11 | License and costs transparent | PARTIAL (MIT file ✓, `license: "MIT"` added to root package.json at G10-C §12, **committed at G9 (`9642f05`) 2026-11-12**; costs documented in README/ADOPTION) |
 | 12 | Independent users complete merchant journey | UNVERIFIED (no external testers) |
 
 **Overall: NOT LAUNCH-READY.** Green builds and a 36→1 advisory drop do not
@@ -124,8 +124,10 @@ make it so — and the feed has since drifted back to **3 records (1 low +
 G10-F (2026-11-09) to 1 record — the unfixable `deepmerge` low (§15.2)**,
 which does not change the verdict either. Gate 3 remains a hard
 FAIL; gate 10 is PARTIAL (release engineering exists and was dry-run-proven
-at §14, but zero releases cut and remote CI unverified); gates 6 and 7
-cleared locally — 6 at Stage B, 7 with the tested clean install at §9.
+at §14, but zero releases cut — remote CI now verified green at G9, §17);
+gates 6 and 7
+cleared locally — 6 at Stage B (drill also green remotely at G9), 7 with
+the tested clean install at §9.
 
 ---
 
@@ -158,7 +160,7 @@ Not selected this session, with reason:
 | B | Critical blockers: G1 backup/restore (this session); then G3 tax guidance, G11 SEO | **G1 complete 2026-10-29**; **G11 complete 2026-10-30**; **G3 complete 2026-10-31** |
 | C | Merchant journey end-to-end incl. G3, G5 (dev provider), G15 doc audit | **G3 complete 2026-10-31**; **G5 complete 2026-11-03** (§8); G15 doc audit planned |
 | D | Production capabilities: G2 payments (after credentials), G4 RBAC, G6 Redis, G7 webhooks, G8 upgrade docs | G8's docs half pulled forward as stage milestone **G7 — deployment/upgrade docs complete 2026-11-05 (§9)**; CHANGELOG/versioning/release-checklist half stays with G10; rest planned |
-| E | Release verification: full suite, clean-checkout doc verification, G9 remote CI (when authorized) | planned |
+| E | Release verification: full suite, clean-checkout doc verification, G9 remote CI (when authorized) | **G9 complete 2026-11-12 (§17)**; rest planned |
 | F | Adoption preparation: G10 measurements, demo, G14/G16, launch materials for passed gates only | planned |
 
 ---
@@ -1779,3 +1781,109 @@ First-run failure output preserved at
 - Standing constraints unchanged: nothing committed, pushed, tagged or
   triggered. Next: **G2-G** once sandbox credentials exist (earlier, if
   authorized: G9 remote verification, G14 CODE_OF_CONDUCT).
+
+---
+
+## 17. G9 - remote CI verification (2026-11-12)
+
+**G9 closed: GitHub Actions now actually runs this repository's full
+workflow and it is green.** This was the last engineering-verification
+blocker that required explicit authorization; it was granted this session
+(single comprehensive commit + push to `main`).
+
+### 17.1 Pre-flight (read-only) and the six-DB gap
+
+Before any push, a static audit of the working-copy `ci.yml` found one
+real gap that would have failed the first remote run:
+
+- The G10-A fix pre-created **five** suite databases, but G2 had added a
+  **sixth** HTTP spec (`g2-payment.spec.ts` → `openshop_g2_payment`).
+  The runner creates a missing suite DB but never seeds it, so the remote
+  `g2-payment` run would have failed on missing fixtures — the exact
+  G10-A failure mode (roadmap §10).
+- Fixed in the working copy: loop now creates **all six** databases;
+  step names/comments updated ("five" → "six"); the
+  `test:integration:modules` rationale comment refreshed (its pattern now
+  also matches the G2 module specs, all `*.unit.spec.ts` and already run
+  by the unit job); `docs/RELEASING.md` checklist updated (five → six
+  DBs, baseline 219 → 313).
+- YAML re-validated with js-yaml (exit 0): jobs `checks` (11 steps) +
+  `integration` (7 steps), loop = the same six names as the local
+  `regression-prep.ps1`.
+- Other pre-flight facts: `origin/main` = local HEAD `ef471159…` (push
+  would be a clean fast-forward, no history rewrite); 0 `.env` files and
+  0 build artifacts staged; secret scan of all to-be-committed files = 0
+  real secrets (5 pattern hits are synthetic test fixtures such as
+  `sk_test_MARKER123456` used to assert redaction); no `gh` CLI, Windows
+  Git Credential Manager present.
+
+### 17.2 Commit and push [RUN — explicitly authorized]
+
+- **Commit `9642f05`** — single comprehensive commit (user's choice):
+  `101 files changed, 19970 insertions(+), 580 deletions(-)` = the entire
+  previously-uncommitted G1→G10-F+G2 working tree (27 modified + 1
+  deleted + 73 new files). Message enumerates every milestone, the CI
+  six-DB fix, the local 313/313 battery, and the honesty caveats (no
+  Stripe credentials, G2-G BLOCKED, Gate 3 FAIL, NOT LAUNCH-READY).
+- **Push: `ef47115..9642f05 main -> main`, exit 0** (fast-forward).
+  Post-push: tree 0 entries; `git ls-remote origin main` = `9642f05`.
+- GitHub's push response also reported "11 vulnerabilities on default
+  branch (4 high, 4 moderate, 3 low)" — that is **Dependabot's
+  branch-level advisory view** (all dependencies, broader than
+  `pnpm audit --prod`); the locally verified production-dep state remains
+  **exactly 1 record (`deepmerge` low, acknowledged)** per G10-F §15.2.
+  Not conflated; no new production advisory is claimed or dismissed
+  without evidence.
+- Local belt-and-braces before/independently of the run: full
+  `pnpm run build` (both apps) **exit 0** (backend 26.79 s + storefront
+  70.56 s) — the one battery step not re-run after G2 — and the tree
+  stayed clean (0 entries) afterwards.
+
+### 17.3 The run [RUN]
+
+| Field | Value |
+| --- | --- |
+| Run | [`43197912861`](https://github.com/Anismansuri03/openshop/actions/runs/43197912861) — workflow `CI`, event `push`, head `9642f05` |
+| Window | 2026-11-12T10:09:59Z → 10:15:20Z (**321 s** wall) |
+| Conclusion | **success** (3/3 jobs) |
+| `checks` (22.22.0) | **success, 104 s** — install(frozen), lint, typecheck backend, typecheck storefront, unit storefront, unit backend, production build, audit step all `success` |
+| `checks` (24) | **success, 85 s** — same 8 steps all `success` |
+| `integration` | **success, 318 s** — install(frozen), **"Create and pre-migrate all six suite databases (seeds fixtures)" success**, **"HTTP integration suites (all six suites)" success**, "Migration exit-code regression suite" success |
+
+Evidence honesty: job/step conclusions come from the GitHub Actions API.
+The job **logs** endpoint returned 403 unauthenticated, so exact remote
+test *counts* were **not** extracted — what is verified is that every
+test step **exited green** (jest/vitest failures would fail the step).
+No count is invented for the remote run; the local counts (313/313)
+remain the counted record.
+
+Notes:
+- Node **22.22.0** now has its first recorded (remote) run — the
+  "no recorded local run" gap noted in `docs/RELEASING.md` §4 is closed
+  by CI's matrix leg.
+- The audit step on a `main` push runs with `continue-on-error` by design
+  (blocking only on tag refs, RELEASING §6.5) — its green step is
+  "informational did not break the job", not "audit exit 0".
+- First-ever remote execution of the `integration` job (all previous
+  remote runs predated it: only checks-only workflow runs on dependabot
+  PRs existed).
+
+### 17.4 Gate impact
+
+- **G9: DONE** — "Actual Actions run URL with green `integration` job"
+  satisfied (run 43197912861).
+- Gate 9 stays **PASS**, now with remote evidence (was local-only).
+- Gate 10 unchanged (**PARTIAL**) — CI verification was one checklist
+  input; still zero tags/releases, gate 3 FAIL.
+- **Gate 3 stays FAIL** (G2-G BLOCKED) — verdict unchanged:
+  **NOT LAUNCH-READY**.
+- Docs updated: this section, roadmap gap/gate/stage-plan rows, readiness
+  report Gate 6/9/10 rows + stage log, `docs/G2_COMPLETION_REPORT.md`,
+  `docs/G2_PAYMENT_TESTING.md`, `docs/RELEASING.md` §4/§6.7/evidence.
+
+### 17.5 What remains
+
+- **G2-G** — real Stripe sandbox (blocked on credentials; never
+  simulated).
+- **G14** — CODE_OF_CONDUCT.md (deferred; last RELEASING §6.7 blocker).
+- Everything else: G4 RBAC, G6 Redis, G7 webhooks, G15/G16 — per §2.

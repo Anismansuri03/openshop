@@ -67,12 +67,14 @@ Consequences that are policy, not accident:
   - Node.js: `>=22.22.0` (root `engines`) [SRC]. **Skew resolved at G10-D:**
     CI's `checks` job now runs a matrix of `22.22.0` (the declared floor)
     and `24` (the line every local record ran on, v24.17.0); the
-    `integration` job pins `24` [SRC — YAML-validated locally, remote run
-    pending G9]. Node 22.22.0 itself has no recorded local run
-    [NOT TESTED] — its CI leg is the first evidence.
+    `integration` job pins `24` [SRC — YAML-validated locally, **remote run
+    green at G9: run 43197912861, both matrix legs success, 2026-11-12,
+    roadmap §17**]. Node 22.22.0 has **no recorded local run** [NOT TESTED
+    locally] — its CI matrix leg is now the recorded evidence (success).
   - PostgreSQL: 17 is what all local verification ran on [TESTED]; CI's
     service image is now `postgres:17-alpine` — **aligned at G10-D**
-    (was 16-alpine) [SRC — YAML-validated, remote pending G9].
+    (was 16-alpine) [SRC — YAML-validated, **remotely verified green at G9
+    (run 43197912861, integration job success on postgres:17-alpine)**].
   - Package manager: pnpm **10.11.1** exactly (root `packageManager` pin);
     other package managers are not supported (never introduce a second
     lockfile).
@@ -136,9 +138,9 @@ Every item is pass/fail; a single fail stops the release.
    install previous tag, migrate, back up, upgrade, verify data intact
    (procedure in UPGRADING.md).
 7. **Release-engineering items from the G10-A audit** — status after
-   G10-D (2026-11-07); every applied change is **uncommitted** and
-   YAML-validated locally (js-yaml parse of both workflows), remote run
-   still pending (G9):
+   G10-D (2026-11-07); every applied change was YAML-validated locally
+   (js-yaml parse of both workflows), **committed + pushed and remotely
+   verified green at G9 (2026-11-12, run 43197912861, roadmap §17)**:
    - [x] `update.yaml`: `actions/checkout@v4`;
      `medusajs/medusa-update-action` pinned to commit
      `02eca016e5b0024bf4ff3beaeff4530bc18fa6e3` (the `v1` target as of
@@ -186,11 +188,15 @@ reproducing results needs all of these:
   restore (G10-B, roadmap §11).
 - [TESTED — 34/34 and 15/34] CI configuration replicated locally, fixed
   version and pre-fix version (G10-A, roadmap §10).
-- [NOT TESTED] remote GitHub Actions run (G9), N→N+1 upgrade, any tag cut,
+- [TESTED — remote, 2026-11-12] GitHub Actions run on `main`
+  (G9): run 43197912861 — `checks` (22.22.0) + `checks` (24) +
+  `integration` all green in 321 s, incl. the six-suite DB seed step and
+  all six HTTP suites (roadmap §17).
+- [NOT TESTED] N→N+1 upgrade, any tag cut,
   any release published, reverse proxy/TLS/process manager.
 - [SRC] release-workflow hardening in §6 item 7 - applied at G10-D,
-  validated only by local YAML parsing (remote CI run pending, G9);
-  `CODE_OF_CONDUCT.md` absence.
+  **remotely verified green at G9** (run 43197912861; `CODE_OF_CONDUCT.md`
+  absence remains).
 - [TESTED - dry-run, 2026-11-08] the full §6 checklist executed as far as
   gates + authorization allow (roadmap §14): every clean-checkout step
   exit 0 (218/218) in a fresh 368-file copy; audit **exit 1 with 3

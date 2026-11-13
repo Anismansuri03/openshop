@@ -94,8 +94,11 @@ After the fixes: targeted 13/13, then full suite 47/47.
   but never validated (G2-G BLOCKED); checkout still runs on
   simulated/test providers only; a simulated success is not a payment
   integration.
-- **Gate 9: PASS (local)** — 313 tests (was 219); remote CI still
-  unverified (**G9** — push authorization required).
+- **Gate 9: PASS** — 313 tests locally (was 219) **and remote GitHub
+  Actions verified green 2026-11-12** (G9: run
+  [`43197912861`](https://github.com/Anismansuri03/openshop/actions/runs/43197912861),
+  `checks` ×2 + `integration` all success, all six suite DBs seeded
+  remotely — roadmap §17).
 - Gates 1/5/6/7 PASS (local), 2/4/11 PARTIAL, 8/12 UNVERIFIED,
   10 PARTIAL — unchanged by G2.
 - **Overall verdict: NOT LAUNCH-READY.**
@@ -107,7 +110,10 @@ After the fixes: targeted 13/13, then full suite 47/47.
    `docs/G2_SANDBOX_VALIDATION.md`, attaching real evidence. Until then
    every report must keep G2-G as **BLOCKED / NOT TESTED** and Gate 3 as
    **FAIL**.
-2. **G9** — remote CI verification of the working copy (needs explicit
-   push authorization for `https://github.com/Anismansuri03/openshop.git`).
+2. **G9** — remote CI verification: **DONE 2026-11-12** — run
+   [`43197912861`](https://github.com/Anismansuri03/openshop/actions/runs/43197912861)
+   green on push `9642f05` (authorized single comprehensive commit of the
+   working tree; pre-flight fixed `ci.yml`'s missing sixth suite DB —
+   roadmap §17). No authorization pending for CI anymore.
 3. **G14** — CODE_OF_CONDUCT.md (deferred by user; blocks the release
    checklist).

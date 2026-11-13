@@ -133,6 +133,9 @@ including the server-side logs above). Second run: 13/13; full suite: 47/47.
   real test-mode checkout/capture/refund, 3DS/redirect flows. **BLOCKED —
   no credentials exist. NOT TESTED, NOT SIMULATED.**
 - Settlement, disputes, payouts (G2-H): out of scope for G2.
-- Remote CI (G9): still requires explicit push authorization.
+- Remote CI (G9): **verified green 2026-11-12** — run
+  [`43197912861`](https://github.com/Anismansuri03/openshop/actions/runs/43197912861)
+  (push `9642f05`, `checks` ×2 + `integration` all success incl. the
+  six-DB seed step and all six HTTP suites; roadmap §17).
 
 **Gate 3 (real payments safely) stays FAIL.**
