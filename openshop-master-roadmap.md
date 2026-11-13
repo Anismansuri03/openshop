@@ -1943,15 +1943,24 @@ milestone — no code, no dependencies, no credentials, no test impact.
 
 - Docs-only change: no product code touched, no tests re-run (nothing in
   the test surface reads markdown); lint/typecheck/build unaffected.
-  CI re-verifies on push like any change (G9 workflow).
+- **Commit + push (explicitly authorized by the user for G14):** commit
+  **`a884fc3`** (8 files, 242+/12−) → push `8c8e5c0..a884fc3 main ->
+  main`, exit 0; tree 0 entries after. **CI run
+  [`43429150272`](https://github.com/Anismansuri03/openshop/actions/runs/43429150272)**
+  (push `a884fc3`, 2026-11-13, **248 s**): conclusion **success**,
+  3/3 jobs — `checks` (22.22.0) + `checks` (24) all steps success, and
+  `integration` success incl. "Create and pre-migrate all six suite
+  databases" + "HTTP integration suites (all six suites)" + migration
+  suite `[RUN — GitHub Actions API]`.
 - `git diff` scope confirmed targeted (RELEASING: 5+/2−; line endings
   LF preserved, no whole-file rewrite).
 - Gate impact: none for gates 1–10; Gate 11's governance sub-item
   (CODE_OF_CONDUCT) is now satisfied — gate stays **PARTIAL** overall
   only on cost-transparency wording, unchanged verdict.
 - **Gate 3 stays FAIL (G2-G BLOCKED); verdict stays NOT LAUNCH-READY.**
-- Standing constraints: nothing committed/pushed/tagged without explicit
-  authorization (G9's authorization was for G9).
+- Standing constraints honored: the G14 commit/push ran only after
+  explicit user authorization for G14 (G9's authorization covered G9
+  only); nothing tagged or reset.
 
 ### 18.5 What remains
 

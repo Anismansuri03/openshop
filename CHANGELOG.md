@@ -68,8 +68,10 @@ README). Detailed records: `openshop-master-roadmap.md`,
   (Contributor Covenant 2.1; enforcement routed through the existing
   private channels in `SECURITY.md` — no contact address invented),
   linked from `README.md` (Contributing) and `CONTRIBUTING.md` (Ground
-  rules); `docs/RELEASING.md` §6.7's last open checkbox closed `[SRC]`.
-  Docs-only: no code or test impact (roadmap §18).
+  rules); `docs/RELEASING.md` §6.7's last open checkbox closed.
+  Docs-only: no code or test impact (roadmap §18); pushed as `a884fc3`,
+  CI run 43429150272 green (3/3 jobs) `[SRC/RUN — GitHub Actions
+  API]`.
 
 ### Fixed
 
