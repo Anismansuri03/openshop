@@ -64,6 +64,12 @@ README). Detailed records: `openshop-master-roadmap.md`,
   (sharp, proxy-addr, grpc-js, body-parser, compression, follow-redirects,
   lodash, multer and others pinned via `pnpm-workspace.yaml` overrides)
   `[SRC]`.
+- Community standards (G14, 2026-11-13): root `CODE_OF_CONDUCT.md`
+  (Contributor Covenant 2.1; enforcement routed through the existing
+  private channels in `SECURITY.md` — no contact address invented),
+  linked from `README.md` (Contributing) and `CONTRIBUTING.md` (Ground
+  rules); `docs/RELEASING.md` §6.7's last open checkbox closed `[SRC]`.
+  Docs-only: no code or test impact (roadmap §18).
 
 ### Fixed
 

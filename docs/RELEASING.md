@@ -154,8 +154,11 @@ Every item is pass/fail; a single fail stops the release.
      `checks` Node matrix `[22.22.0, 24]`; `integration` on Node 24 +
      `postgres:17-alpine`.
    - [x] Version/CHANGELOG metadata + `license` field (G10-C).
-   - [ ] `CODE_OF_CONDUCT.md` still outstanding (routed G14) — **remains
-     blocking under this checklist.**
+   - [x] `CODE_OF_CONDUCT.md` [SRC - added at G14, 2026-11-13]:
+     Contributor Covenant 2.1, enforcement via the private channels in
+     `SECURITY.md`; linked from `README.md` (Contributing) and
+     `CONTRIBUTING.md` (Ground rules). **No longer blocking under this
+     checklist.**
 8. **Cut the release:** authorized annotated tag `vX.Y.Z` → push → GitHub
    Release from CHANGELOG → inspect the Actions run for the tag.
 9. **Post-release verification:** fresh clone **of the tag** → §5 steps
@@ -195,8 +198,8 @@ reproducing results needs all of these:
 - [NOT TESTED] N→N+1 upgrade, any tag cut,
   any release published, reverse proxy/TLS/process manager.
 - [SRC] release-workflow hardening in §6 item 7 - applied at G10-D,
-  **remotely verified green at G9** (run 43197912861; `CODE_OF_CONDUCT.md`
-  absence remains).
+  **remotely verified green at G9** (run 43197912861); `CODE_OF_CONDUCT.md`
+  **added at G14 (2026-11-13, §6 item 7 checkbox now closed)**.
 - [TESTED - dry-run, 2026-11-08] the full §6 checklist executed as far as
   gates + authorization allow (roadmap §14): every clean-checkout step
   exit 0 (218/218) in a fresh 368-file copy; audit **exit 1 with 3

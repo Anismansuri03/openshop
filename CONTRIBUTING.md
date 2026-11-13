@@ -4,6 +4,9 @@ Thanks for your interest in contributing.
 
 ## Ground rules
 
+- By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md)
+  (Contributor Covenant 2.1); report violations through the private
+  channels in it (same channels as [SECURITY.md](SECURITY.md)).
 - This repository is a starter for local development. Keep claims honest: no
   "production-ready" or Shopify-compatibility claims in docs, code, or PRs.
 - Preserve the MIT attribution to Medusa and the Medusa DTC Starter

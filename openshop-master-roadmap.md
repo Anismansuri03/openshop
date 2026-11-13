@@ -88,7 +88,7 @@ Severity = launch impact. "Size" = expected effort for a verified fix.
 | **G11** | **Med-Low** | **SEO**: no sitemap/robots; dead `next-sitemap` config; `metadataBase` localhost fallback (M11) | [SRC] | working `app/sitemap.ts` + robots route or config; remove dead code | Lint/type/build green; generated sitemap lists seeded products on test instance | S |
 | **G12** | **Med-Low** | **i18n**: no translated strings; country routing exists but UI strings are English-only (mission §9/13) | [SRC] PRODUCT_AUDIT §6 | Survey stack need first; lightweight string catalogs only if justified — avoid premature framework (mission §9) | Documented decision + at least one locale path proof if implemented | M (or documented-defer) |
 | **G13** | **Low (tracked)** | `deepmerge@4.3.1` advisory — no patched version; **the 2 moderates added 2026-11-08 (G10-E): `glob` GHSA-3g3m-2fjr-6pw4, `minimatch` GHSA-g3hv-75wg-m249 — both remediated 2026-11-09 (G10-F selector override, §15.2)** | [RUN] audit exit 1; lockfile path `notification-sendgrid > @sendgrid/helpers@8.0.0 > deepmerge` verified this session; G10-E re-run = 3 records (§14.3) → G10-F = 1 record (§15.2) | Track GHSA; remove SendGrid module if unused | audit either exits 0 or every residual stays documented (currently 1) | S |
-| **G14** | **Low (adopt)** | Governance polish: CODE_OF_CONDUCT missing (root `license: "MIT"` field **added at G10-C**, working copy only — uncommitted; LICENSE file always existed, MIT) | [SRC] `node -p license` → UNSET at HEAD (field present uncommitted); `.github/` has issue+PR templates | add CODE_OF_CONDUCT.md (e.g. Contributor Covenant); commit the staged G10-C metadata when authorized | docs link CoC; committed package.json shows license | S |
+| **G14** | **Low (adopt)** | ~~Governance polish: CODE_OF_CONDUCT missing~~ — **DONE 2026-11-13 (§18)**: `CODE_OF_CONDUCT.md` added (Contributor Covenant 2.1; enforcement via the private channels in `SECURITY.md`, no invented contact address), linked from `README.md` (Contributing) and `CONTRIBUTING.md` (Ground rules); `RELEASING` §6.7 last open item closed | [SRC] was: `node -p license` → UNSET at HEAD (field present uncommitted); `.github/` has issue+PR templates; `CONTRIBUTING.md` already existed (README L234 link valid) | add CODE_OF_CONDUCT.md (e.g. Contributor Covenant); commit the staged G10-C metadata when authorized | docs link CoC ✓ (§18); committed package.json shows license ✓ (committed at G9, `9642f05`) | **Done 2026-11-13 (§18)** |
 | **G15** | **Low** | Documentation-command audit (P1-8) + `/store/locales` 404 + metadata nits (L14) | [DOC/SRC] | scripted run-through of every documented command; fix mismatches | Every README/AGENTS/local-dev command executed with recorded exit codes | S |
 | **G16** | **Structural** | **Extensibility contract undocumented for third parties** (mission §6): no example module/workflow in repo, no stability/versioning policy | [SRC] PRODUCT_AUDIT §8 barrier 3 | one copy-able example module + docs/EXTENSIBILITY.md marking stable/experimental/internal | A newcomer builds the example from docs alone | M |
 
@@ -161,7 +161,7 @@ Not selected this session, with reason:
 | C | Merchant journey end-to-end incl. G3, G5 (dev provider), G15 doc audit | **G3 complete 2026-10-31**; **G5 complete 2026-11-03** (§8); G15 doc audit planned |
 | D | Production capabilities: G2 payments (after credentials), G4 RBAC, G6 Redis, G7 webhooks, G8 upgrade docs | G8's docs half pulled forward as stage milestone **G7 — deployment/upgrade docs complete 2026-11-05 (§9)**; CHANGELOG/versioning/release-checklist half stays with G10; rest planned |
 | E | Release verification: full suite, clean-checkout doc verification, G9 remote CI (when authorized) | **G9 complete 2026-11-12 (§17)**; rest planned |
-| F | Adoption preparation: G10 measurements, demo, G14/G16, launch materials for passed gates only | planned |
+| F | Adoption preparation: G10 measurements, demo, G14/G16, launch materials for passed gates only | **G14 complete 2026-11-13 (§18)**; rest planned |
 
 ---
 
@@ -1345,6 +1345,12 @@ assertion weakened).
 (gate 3 FAIL), steps 2–3 (authorization + G9), step 5 (audit exit 1);
 steps 6/10 untestable/untouched until then.
 
+*(Superseded piecemeal since 2026-11-08: steps 2/3/7 — committed and
+pushed at G9 (`9642f05`/`8c8e5c0`), remote CI green, run 43197912861 §17;
+step 7's `CODE_OF_CONDUCT.md` blocker cleared at G14 (§18); step 5's
+audit improved to the acknowledged 1 low record at G10-F (§15.2). Steps
+1/6/8/9/10 unchanged: gate 3 FAIL, zero tags, no authorization.)*
+
 ### 14.3 Finding: production audit drifted 1 → 3 records [RUN]
 
 `pnpm audit --prod` in the fresh copy (2026-11-08) exits **1** with
@@ -1885,5 +1891,72 @@ Notes:
 
 - **G2-G** — real Stripe sandbox (blocked on credentials; never
   simulated).
-- **G14** — CODE_OF_CONDUCT.md (deferred; last RELEASING §6.7 blocker).
+- ~~**G14** — CODE_OF_CONDUCT.md (deferred; last RELEASING §6.7
+  blocker)~~ — **done 2026-11-13 (§18)**.
 - Everything else: G4 RBAC, G6 Redis, G7 webhooks, G15/G16 — per §2.
+
+---
+
+## 18. G14 - community standards (2026-11-13)
+
+**G14 closed: the last open release-checklist community-standard item
+(`docs/RELEASING.md` §6.7) is now satisfied.** Documentation-only
+milestone — no code, no dependencies, no credentials, no test impact.
+
+### 18.1 Scope found (read-only first)
+
+- Roadmap gap row G14 (§2 table): "Governance polish: CODE_OF_CONDUCT
+  missing"; acceptance = "docs link CoC; committed package.json shows
+  license".
+- `docs/RELEASING.md` §6.7: one open checkbox — `CODE_OF_CONDUCT.md`
+  still outstanding (routed G14), explicitly "remains blocking under this
+  checklist".
+- `CONTRIBUTING.md` **already existed** (56 lines; README L234 link was
+  valid) but had no Code-of-Conduct reference; `.github/` already had
+  issue + PR templates; LICENSE (MIT) and the root `license: "MIT"` field
+  were already committed at G9 (`9642f05`) — so the license half of the
+  acceptance criterion was already met.
+
+### 18.2 Deliverables [SRC]
+
+1. **`CODE_OF_CONDUCT.md`** (new, root) — Contributor Covenant v2.1
+   (adapted formatting to the project's line style). Enforcement contact
+   deliberately routes through the **existing private channels in
+   `SECURITY.md`** (GitHub Security-tab private report, or a minimal
+   issue asking for a private channel): no email address was invented,
+   consistent with this repository having no public contact address.
+2. **`README.md`** Contributing section now links the CoC.
+3. **`CONTRIBUTING.md`** Ground rules now open with the CoC agreement +
+   how to report violations.
+4. **`docs/RELEASING.md`** §6.7 checkbox → `[x]` with the G14 note
+   (**no longer blocking**).
+
+### 18.3 Acceptance criterion check
+
+| Criterion | Result |
+| --- | --- |
+| docs link CoC | ✓ README + CONTRIBUTING (+ SECURITY.md linkage inside the CoC) |
+| committed package.json shows license | ✓ already true since G9 `9642f05` (`"license": "MIT"`) |
+| RELEASING §6.7 last open item closed | ✓ checkbox now `[x]` |
+
+### 18.4 Verification and honesty
+
+- Docs-only change: no product code touched, no tests re-run (nothing in
+  the test surface reads markdown); lint/typecheck/build unaffected.
+  CI re-verifies on push like any change (G9 workflow).
+- `git diff` scope confirmed targeted (RELEASING: 5+/2−; line endings
+  LF preserved, no whole-file rewrite).
+- Gate impact: none for gates 1–10; Gate 11's governance sub-item
+  (CODE_OF_CONDUCT) is now satisfied — gate stays **PARTIAL** overall
+  only on cost-transparency wording, unchanged verdict.
+- **Gate 3 stays FAIL (G2-G BLOCKED); verdict stays NOT LAUNCH-READY.**
+- Standing constraints: nothing committed/pushed/tagged without explicit
+  authorization (G9's authorization was for G9).
+
+### 18.5 What remains
+
+- **G2-G** — real Stripe sandbox (blocked on Stripe test credentials).
+- **Third-party payment-provider extensibility proof** (user-stated next
+  after G14: a third party adds a provider without touching core
+  checkout/order logic).
+- G4 RBAC, G6 Redis, G7 webhooks, G12 i18n, G15/G16 — per §2.

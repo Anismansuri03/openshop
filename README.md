@@ -231,7 +231,9 @@ These are pre-existing, documented, and intentionally not hidden:
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Planned work is tracked in
+See [CONTRIBUTING.md](CONTRIBUTING.md). Participation is governed by the
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) (Contributor Covenant 2.1).
+Planned work is tracked in
 [ROADMAP.md](ROADMAP.md). Security reports: [SECURITY.md](SECURITY.md).
 Notable changes: [CHANGELOG.md](CHANGELOG.md). Versioning and the
 release/support policy (including the pre-release checklist) live in

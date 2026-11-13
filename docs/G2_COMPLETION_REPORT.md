@@ -115,5 +115,6 @@ After the fixes: targeted 13/13, then full suite 47/47.
    green on push `9642f05` (authorized single comprehensive commit of the
    working tree; pre-flight fixed `ci.yml`'s missing sixth suite DB —
    roadmap §17). No authorization pending for CI anymore.
-3. **G14** — CODE_OF_CONDUCT.md (deferred by user; blocks the release
-   checklist).
+3. ~~**G14** — CODE_OF_CONDUCT.md (deferred by user; blocks the release
+   checklist).~~ **DONE 2026-11-13** — `CODE_OF_CONDUCT.md` added and
+   linked; `RELEASING` §6.7 last open item closed (roadmap §18).
